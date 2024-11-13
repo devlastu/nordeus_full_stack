@@ -1,0 +1,66 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 0 15px;
+}
+
+#map {
+    width: auto;       /* Slika zadržava svoju stvarnu širinu */
+    height: auto;      /* Slika zadržava svoju stvarnu visinu */
+    max-width: 100%;   /* Maksimalna širina mape je 100% širine ekrana */
+    max-height: 50vh;  /* Maksimalna visina mape je 50% visine ekrana */
+    object-fit: contain; /* Ovaj atribut omogućava da slika bude proporcionalna */
+    cursor: pointer;  /* Dodato kako bi izgledalo da je slika interaktivna */
+}
+
+#coordinates p {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#result-text {
+    min-height: 30px;
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 20px;
+}
+
+.btn {
+    margin-top: 5px;
+    padding: 5px 5px;
+    font-size: 1.2rem;
+}
+
+#response {
+    width: 100%;
+    max-height: 10vh;
+}
+
+@media (max-width: 768px) {
+    /* Na manjim ekranima, mapa je manja i prilagodjena */
+    #map {
+        max-height: 40vh;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Na vrlo malim ekranima, dugme i tekst su veći */
+    .btn {
+        font-size: 1.1rem;
+        padding: 12px 25px;
+    }
+
+    #coordinates p {
+        font-size: 1rem;
+    }
+}
