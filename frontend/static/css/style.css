@@ -1,38 +1,66 @@
+/* Pozadinska slika za body */
 body, html {
     height: 100%;
     margin: 0;
     padding: 0;
+    background-image: url('/frontend/static/images/clouds_background1.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
+/* Dodajemo manji blur efekt sa ::before */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    /*filter: blur(50px);*/
+    z-index: -1000;
+}
+
+/* Stil za container bez pozadine */
 .container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    padding: 0 15px;
+    max-width: 80%;
+    max-height: 80vh;
+    padding: 20px;
+    border-radius: 15px;
+    /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);*/
+    z-index: 1;
 }
 
+/* Blur efekat za svaki pojedinačni element */
+.row .blured{
+    position: relative;
+    margin: 10px 0;
+    padding: 10px;
+    backdrop-filter: blur(2px); /* Blur efekt na svakom elementu */
+    border-radius: 10px;
+}
+
+/* Stil za mapu sa zaobljenim uglovima */
 #map {
-    width: auto;       /* Slika zadržava svoju stvarnu širinu */
-    height: auto;      /* Slika zadržava svoju stvarnu visinu */
-    max-width: 100%;   /* Maksimalna širina mape je 100% širine ekrana */
-    max-height: 50vh;  /* Maksimalna visina mape je 50% visine ekrana */
-    object-fit: contain; /* Ovaj atribut omogućava da slika bude proporcionalna */
-    cursor: pointer;  /* Dodato kako bi izgledalo da je slika interaktivna */
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 50vh;
+    object-fit: contain;
+    cursor: pointer;
+    border-radius: 40px; /* Dodato za zaobljene uglove */
 }
 
-#coordinates p {
+#coordinates p,
+#result-text {
     font-size: 1.2rem;
     text-align: center;
     margin-top: 10px;
-}
-
-#result-text {
-    min-height: 30px;
-    text-align: center;
-    font-size: 1.2rem;
-    margin-top: 20px;
 }
 
 .btn {
@@ -47,19 +75,16 @@ body, html {
 }
 
 @media (max-width: 768px) {
-    /* Na manjim ekranima, mapa je manja i prilagodjena */
     #map {
         max-height: 40vh;
     }
 }
 
 @media (max-width: 576px) {
-    /* Na vrlo malim ekranima, dugme i tekst su veći */
     .btn {
         font-size: 1.1rem;
         padding: 12px 25px;
     }
-
     #coordinates p {
         font-size: 1rem;
     }
