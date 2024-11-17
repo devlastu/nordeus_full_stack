@@ -1,9 +1,24 @@
-// Initialize variables to store coordinates
+// Initialize variables to store coordinates and difficulty settings
 let selectedCoords = null;
 let originalWidth, originalHeight;
+let attemptsLeft = 3;
+let currentDifficulty = "regular";
+
+
+
+// // Update the number of lives based on the selected difficulty
+// localStorage.setItem('attempts-left', attemptsLeft);
+// document.getElementById("attempts-left-text").innerText = parseInt(localStorage.getItem("attempts-left"), 10);
+//
+// localStorage.setItem('currentDifficulty', currentDifficulty);
+// document.getElementById("currentDifficulty").innerText = localStorage.getItem("currentDifficulty");
 
 // When the window loads, store the original image dimensions in localStorage
 window.onload = function() {
+
+    document.getElementById("currentDifficulty").innerText = localStorage.getItem("currentDifficulty");
+    document.getElementById("attempts-left-text").innerText = parseInt(localStorage.getItem("attempts-left"), 10);
+
     // Remove any previously stored dimensions from localStorage
     localStorage.removeItem('originalWidth');
     localStorage.removeItem('originalHeight');
@@ -53,6 +68,7 @@ document.getElementById("map").addEventListener("click", function(event) {
     selectedCoords = { x: intY, y: intX };
 });
 
+// Handle the submission of coordinates
 document.getElementById("send-coordinates").addEventListener("click", function() {
     // Check if coordinates have been selected
     if (!selectedCoords) {
@@ -78,30 +94,15 @@ document.getElementById("send-coordinates").addEventListener("click", function()
             if (result.status === "finished_win") {
                 alertTitle = "Congratulations! You guessed correctly!";
                 alertColor = "green";
-                backdropText = `
-                    rgba(253, 227, 167, 0.4)
-                    url("/frontend/static/images/well_done.webp")
-                    left top
-                    no-repeat
-                `;
+                backdropText = `rgba(253, 227, 167, 0.4) url("/frontend/static/images/well_done.webp") left top no-repeat`;
             } else if (result.status === "finished_lose") {
                 alertTitle = "Game Over! You lost. Try again!";
                 alertColor = "red";
-                backdropText = `
-                    rgba(189, 195, 199, 0.4)
-                    url("/frontend/static/images/sad.webp")
-                    left top
-                    no-repeat
-                `;
+                backdropText = `rgba(189, 195, 199, 0.4) url("/frontend/static/images/sad.webp") left top no-repeat`;
             } else if (result.status === "in_progress") {
                 alertTitle = result.message || "Keep trying! You still have a chance!";
                 alertColor = "black";
-                backdropText = `
-                    rgba(205, 209, 228, 0.4)
-                    url("/frontend/static/images/no_surrender.webp")
-                    left top
-                    no-repeat
-                `;
+                backdropText = `rgba(205, 209, 228, 0.4) url("/frontend/static/images/no_surrender.webp") left top no-repeat`;
             } else {
                 alertTitle = "Unexpected status from server.";
                 alertColor = "red";
@@ -124,7 +125,6 @@ document.getElementById("send-coordinates").addEventListener("click", function()
 
             // Update attempts left if available
             if (result.attempts_left !== undefined) {
-                console.log(result.attempts_left);
                 document.getElementById("attempts-left-text").innerText = result.attempts_left; // Update the attempts left text
             }
 
@@ -146,12 +146,7 @@ document.getElementById("send-coordinates").addEventListener("click", function()
                 padding: "3em",
                 color: "red",
                 background: "#fff url(/images/trees.png)",  // Custom background image
-                backdrop: `
-                    rgba(0,0,123,0.4)
-                    url("/images/nyan-cat.gif")
-                    left top
-                    no-repeat
-                `,
+                backdrop: `rgba(0,0,123,0.4) url("/images/nyan-cat.gif") left top no-repeat`,
             });
 
             // Reset the result text
@@ -162,6 +157,7 @@ document.getElementById("send-coordinates").addEventListener("click", function()
 
 // New function to ask the user if they want to play again
 function showPlayAgainPrompt() {
+    difficultyLevel = localStorage.getItem("currentDifficulty")
     Swal.fire({
         title: "Do you want to play again?",
         icon: "question",
@@ -171,7 +167,7 @@ function showPlayAgainPrompt() {
     }).then((response) => {
         if (response.isConfirmed) {
             // User wants to play again, send the restart request to the server
-            axios.post('/restart')
+            axios.post('/restart', { difficulty: difficultyLevel })
                 .then(res => {
                     console.log("Server response after restart:", res.data);
                     // Reset game logic or reload the page after successful restart
@@ -186,7 +182,7 @@ function showPlayAgainPrompt() {
                     });
                 });
         } else {
-            axios.post('/restart')
+            axios.post('/restart', { difficulty: 'regular' })
                 .then(res => {
                     console.log("Server response after restart:", res.data);
                     // Reset game logic or reload the page after successful restart
@@ -204,6 +200,70 @@ function showPlayAgainPrompt() {
     });
 }
 
+// Initialize Bootstrap Modal functionality
+document.getElementById('about-info-btn').addEventListener('click', function() {
+    var modal = new bootstrap.Modal(document.getElementById('aboutInfoModal'));
+    modal.show();
+});
+
+// Difficulty Map and Attempts Left Logic
+const difficultyMap = {
+    "1": "easy",
+    "2": "regular",
+    "3": "intermediate",
+    "4": "hard",
+    "5": "master"
+};
+
+const attemptsLeftMap = {
+    "easy": "5",
+    "regular": "3",
+    "intermediate": "2",
+    "hard": "2",
+    "master": "1"
+};
+
+// Function to get the number of attempts based on the difficulty string
+function getAttemptsLeft(difficulty) {
+    return attemptsLeftMap[difficulty] || "Invalid difficulty"; // Default message if difficulty is not found
+}
+
+// Get all difficulty buttons (those with class 'social-icon-item')
+const difficultyButtons = document.querySelectorAll('.social-icon-item button');
+difficultyButtons.forEach(button => {
+    button.addEventListener('click', function(event) {
+        // Get the difficulty level number from the data-difficulty attribute
+        const difficultyNumber = event.target.getAttribute('data-difficulty');  // "1", "2", etc.
+
+        // Map the number to the corresponding difficulty string
+        const difficultyLevel = difficultyMap[difficultyNumber];
+
+        if (difficultyLevel) {
+            // Update the active difficulty button
+            difficultyButtons.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');  // Highlight the selected button
+
+            // Update attempts based on difficulty level
+            attemptsLeft = getAttemptsLeft(difficultyLevel);
 
 
+            // Send the updated difficulty to the server
+            axios.post('/change-difficulty', { difficulty: difficultyLevel })
+                .then(response => {
+                    // Update the difficulty in localStorage
+                    localStorage.setItem('currentDifficulty', difficultyLevel);
+                    localStorage.setItem('attempts-left', attemptsLeft);
 
+
+                    console.log('Difficulty level changed successfully:', response.data);
+                    // Reload the page to apply the changes
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error changing difficulty level:', error);
+                });
+        } else {
+            console.error('Invalid difficulty level');
+        }
+    });
+});

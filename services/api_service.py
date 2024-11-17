@@ -27,13 +27,13 @@ class MapService:
             print(f"Failed to retrieve map. Status code: {response.status_code}")
             return None
 
-    def generate_map_image(self, matrix):
+    def generate_map_image(self, matrix, difficulty="regular"):
         """
         This method will call the generate_map function
         to generate and save the map image based on the matrix.
         """
         # Call generate_map function to generate and save the map
-        map_path = generate_map(matrix)
+        map_path = generate_map(matrix, difficulty)
 
         if map_path is None:
             return None  # Return None if map generation fails

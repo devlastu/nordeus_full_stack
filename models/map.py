@@ -34,7 +34,7 @@ class Map:
             # Fetch and initialize matrix and related data during construction
             self.set_matrix()
 
-    def restart(self):
+    def restart(self, difficulty = "regular"):
         """
         Reset the Map instance to its initial state and regenerate the map matrix.
         """
@@ -49,12 +49,12 @@ class Map:
 
         # Fetch a new matrix and reinitialize the map
         print("Restarting the map and regenerating data...")
-        self.set_matrix()
+        self.set_matrix(difficulty)
 
         # Log success
         print("Map has been successfully restarted.")
 
-    def set_matrix(self, matrix=None):
+    def set_matrix(self,  difficulty="regular", matrix=None):
         """
         Sets the map's matrix and updates the islands.
         If no matrix is provided, fetches a new one.
@@ -78,7 +78,7 @@ class Map:
             # Update the islands based on the matrix
             self.update_islands()
             # Generate the map image and capture the path, width, and height
-            self.map_path, width, height = MapService().generate_map_image(self.matrix)
+            self.map_path, width, height = MapService().generate_map_image(self.matrix, difficulty)
             # Calculate the cell size
             self.cell_size = self.calculate_cell_size(width, height)
 

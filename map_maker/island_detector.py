@@ -1,3 +1,5 @@
+from numpy.testing.print_coercion_tables import print_coercion_table
+
 from models.island import Island
 from observers.game_state import Coordinates
 from typing import List
@@ -47,6 +49,7 @@ class IslandDetector:
 
         for i in range(len(matrix)):
             for j in range(len(matrix[0])):
+                # print(matrix[i][j])
                 if matrix[i][j] > 0 and not visited[i][j]:
                     island_cells = []
                     self.dfs(i, j, matrix, visited, island_cells)

@@ -1,10 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
+from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse
 from game_manager import GameManager
 from observers.game_state import Coordinates
 
 router = APIRouter()
 GAME_MANAGER = GameManager()  # Create a fresh game_manager instance
+
+
+
+# Difficulty mapping from number to string
+difficulty_map = {
+    "1": "easy",          # 1 maps to "easy"
+    "2": "regular",       # 2 maps to "regular"
+    "3": "intermediate",  # 3 maps to "intermediate"
+    "4": "hard",          # 4 maps to "hard"
+    "5": "master"         # 5 maps to "master"
+}
 
 @router.get("/", response_class=HTMLResponse)
 async def index():
@@ -101,14 +113,34 @@ async def make_guess(guess: Coordinates):
         raise HTTPException(status_code=400, detail="Invalid game status.")
 
 
+class DifficultyRequest(BaseModel):
+    difficulty: str
+
+@router.post("/change-difficulty")
+async def change_difficulty(request: DifficultyRequest):
+    difficulty = request.difficulty
+    print(f"Received difficulty: {difficulty}")  # This should log the string like 'intermediate'
+
+    global GAME_MANAGER
+
+    if difficulty not in GAME_MANAGER.difficulty_levels:
+        raise HTTPException(status_code=400, detail="Invalid difficulty level")
+
+    GAME_MANAGER.set_difficulty(difficulty)
+    return {"message": f"Difficulty level set to {difficulty}"}
+
+
 @router.post("/restart")
-async def restart_game():
+async def restart_game(request: DifficultyRequest):
     """
     Endpoint to restart the game.
     This will reset the game state like attempts left, game status, and selected coordinates.
     """
     try:
-        GAME_MANAGER.reset_game()  # Reset the game state
+        difficulty = request.difficulty
+        if difficulty not in GAME_MANAGER.difficulty_levels:
+            raise HTTPException(status_code=400, detail="Invalid difficulty level")
+        GAME_MANAGER.set_difficulty(difficulty)  # Reset the game state
         return {"message": "Game restarted successfully!", "attempts_left": GAME_MANAGER.num_of_lives}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

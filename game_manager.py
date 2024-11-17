@@ -7,8 +7,8 @@ class GameManager:
         self.difficulty_levels = {
             "easy": 5,
             "regular": 3,
+            "intermediate": 2,
             "hard": 2,
-            "intermediate": 4,
             "master": 1
         }
 
@@ -18,6 +18,7 @@ class GameManager:
         self.game_state.num_of_lives = self.num_of_lives# Pass num_of_lives to the GameState
         self.observers = []
         self.set_winning_island()
+        self.difficulty = difficulty
 
     def get_map(self):
         """Return the map image from MapService."""
@@ -56,11 +57,29 @@ class GameManager:
         """Return the current status of the game."""
         return self.game_state.game_status
 
-    def reset_game(self):
+    def reset_game(self, difficulty="regular"):
         """Reset the game state to start over."""
-        self.map.restart()  # Reset the map (singleton will reinitialize)
+        self.map.restart(difficulty)  # Reset the map (singleton will reinitialize)
+        self.num_of_lives = self.difficulty_levels.get(difficulty, 3)
+        print(f"Num of lives: {self.num_of_lives}")
         self.game_state.restart(self.num_of_lives)
         self.set_winning_island()
+
+
+    def get_levels(self):
+        return self.difficulty_levels
+
+    def set_difficulty(self, difficulty: str):
+        """
+        Sets the game's difficulty.
+        """
+        self.difficulty = difficulty
+        print(difficulty)
+        self.reset_game(difficulty)
+
+        # Adjust other game parameters based on the difficulty
+        # self.adjust_game_parameters()
+
 
 # Helper function
 def print_matrix(matrix):

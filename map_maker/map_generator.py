@@ -6,28 +6,43 @@ from matplotlib.colors import ListedColormap
 from scipy.ndimage import gaussian_filter
 
 
-def generate_map(matrix=None, sigma=0.2, target_width=600, target_height=600):
+def generate_map(matrix=None, difficulty = "regular", target_width=600, target_height=600):
     # If no matrix is provided, return None
+    sigma = 0.2
     if matrix is None:
         return None  # If the map isn't successfully fetched, return None
 
+    if difficulty == "hard":
+        sigma = 1.5
+    elif difficulty == "master":
+        sigma = 3
+    else:
+        sigma = 0.2
+    print(difficulty)
     # Apply Gaussian blur on the height matrix to soften edges
     matrix_smoothed = gaussian_filter(matrix, sigma=sigma)
 
     # Basic colors with additional shades for natural transitions
     colors = [
-        (5, 107, 167, 255),  # Blue (Water)
-        (229, 217, 194),     # Darker beige
-        (181, 186, 97),      # Light olive green
-        (133, 159, 61),      # Muted green
-        (124, 141, 76),      # Dark olive green
-        (104, 118, 62),      # Dark green
-        (123, 106, 74),      # Brown
-        (114, 84, 40),       # Warm brown
-        (101, 69, 31),       # Dark brown
-        (192, 192, 192),     # Light gray
-        (128, 128, 128),     # Medium gray
-        (80, 80, 80),        # Dark gray
+        (38, 221, 255),  # Blue (Water)
+        (255,255,204),     # Darker beige
+        (221, 221, 187),
+        # (204, 204, 170),
+
+        (201,234,136),
+        (167,205,115),
+        (133,175,94),
+        (98,146,73),
+        (64, 116, 52),
+
+        (190, 158, 128),
+        (166, 138, 112),
+        (143, 119, 96),
+        (119, 99, 80),
+        (107, 88, 70),
+
+        (228, 220, 209),
+        (247, 244, 241),
         (255, 255, 255),     # White
     ]
 
