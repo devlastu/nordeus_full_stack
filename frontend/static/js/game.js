@@ -182,8 +182,11 @@ function showPlayAgainPrompt() {
                     });
                 });
         } else {
+            localStorage.setItem('currentDifficulty', 'regular');
+            localStorage.setItem('attempts-left', '3');
             axios.post('/restart', { difficulty: 'regular' })
                 .then(res => {
+                    // Update the difficulty in localStorage
                     console.log("Server response after restart:", res.data);
                     // Reset game logic or reload the page after successful restart
                     window.location.href = 'index';    // Reload the page to restart the game

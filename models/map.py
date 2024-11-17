@@ -7,6 +7,18 @@ class Dimensions():
     height: int
 
 class Map:
+    """
+        The Map class manages the map's data, including fetching the map matrix, detecting islands,
+        and determining the winning island (island with the highest average height). It uses a
+        Singleton pattern to ensure only one map instance exists throughout the game.
+
+        Key features:
+        - Fetches and processes the map matrix.
+        - Detects islands and calculates their average height.
+        - Determines and stores the winning island.
+        - Caches map matrices and their corresponding winning islands.
+        - Handles map restart and regeneration based on difficulty.
+    """
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -97,7 +109,7 @@ class Map:
         """Update the islands based on the current matrix."""
         if self.matrix:
             island_detector = IslandDetector()
-            print_matrix(self.matrix)
+            # print_matrix(self.matrix)
             detected_islands = island_detector.find_islands(self.matrix)
 
             # Reset and populate the min-heap
@@ -112,7 +124,7 @@ class Map:
         if self.islands:
             # Root of the heap contains the island with the maximum average height
             self.winning_island = self.islands[0][1]
-            print(self.winning_island)
+            # print(self.winning_island)
 
     def matrix_to_tuple(self, matrix):
         """Converts the matrix into a tuple of tuples, which is hashable."""

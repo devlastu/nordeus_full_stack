@@ -8,6 +8,25 @@ missed_msg = "Not correct guess this time. Wish you more luck next time!!!"
 guessed_msg = "Congratulations!! You've guessed it!!"
 
 class GameState(BaseModel):
+    """
+        The GameState class manages the state of the game, including tracking the number of attempts,
+        correct and incorrect guesses, remaining lives, and the current game status. It records each
+        player's guess and updates the game state accordingly. It also interacts with the Publisher to
+        notify observers about game state changes.
+
+        Attributes:
+            selected_island (Coordinates): Coordinates of the island selected by the player.
+            attempts (int): Total number of attempts made.
+            correct_attempts (int): Number of correct guesses.
+            incorrect_attempts (int): Number of incorrect guesses.
+            result (Optional[str]): The result of the latest guess ("missed" or "guessed").
+            game_status (str): The current status of the game ("in_progress", "finished_win", "finished_lose").
+            winning_island (Optional[Island]): The island with the highest average height (winning island).
+            num_of_lives (int): The number of remaining lives based on difficulty.
+            attempts_history (List[Coordinates]): History of coordinates attempted by the player.
+            publisher (Publisher): Publisher instance for notifying observers about state changes.
+    """
+
     selected_island: Optional[Coordinates] = None
     attempts: int = 0
     correct_attempts: int = 0

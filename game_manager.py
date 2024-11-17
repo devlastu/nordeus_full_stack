@@ -4,6 +4,12 @@ from models.map import Map
 
 class GameManager:
     def __init__(self, difficulty="regular"):
+        """
+            Initializes the GameManager with the given difficulty level.
+
+            Args:
+                difficulty (str): The difficulty level for the game (default is "regular").
+        """
         self.difficulty_levels = {
             "easy": 5,
             "regular": 3,
@@ -16,7 +22,6 @@ class GameManager:
         self.map = Map()  # Use the Singleton instance of Map
         self.game_state = GameState()
         self.game_state.num_of_lives = self.num_of_lives# Pass num_of_lives to the GameState
-        self.observers = []
         self.set_winning_island()
         self.difficulty = difficulty
 
@@ -36,7 +41,15 @@ class GameManager:
         return self.map.get_map_path()
 
     def check_guess(self, coordinates):
-        """Check the guess and update the game state."""
+        """
+            Check the player's guess and update the game state based on the selected coordinates.
+
+            Args:
+                coordinates (tuple): The coordinates of the guessed island (x, y).
+
+            Returns:
+                dict: A dictionary containing the result of the guess and the remaining attempts.
+        """
         self.game_state.set_selected_island(coordinates, cell_size=self.map.cell_size)
         return {"result": self.game_state.get_result(), "attempts_left": self.game_state.num_of_lives}
 
@@ -61,7 +74,7 @@ class GameManager:
         """Reset the game state to start over."""
         self.map.restart(difficulty)  # Reset the map (singleton will reinitialize)
         self.num_of_lives = self.difficulty_levels.get(difficulty, 3)
-        print(f"Num of lives: {self.num_of_lives}")
+        # print(f"Num of lives: {self.num_of_lives}")
         self.game_state.restart(self.num_of_lives)
         self.set_winning_island()
 
@@ -74,14 +87,14 @@ class GameManager:
         Sets the game's difficulty.
         """
         self.difficulty = difficulty
-        print(difficulty)
+        # print(difficulty)
         self.reset_game(difficulty)
 
         # Adjust other game parameters based on the difficulty
         # self.adjust_game_parameters()
 
 
-# Helper function
+# Helper functions for testing purposes
 def print_matrix(matrix):
     for row in matrix:
         print(" ".join(str(cell).rjust(3, ' ') for cell in row))

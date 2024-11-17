@@ -41,7 +41,7 @@ async def game():
     GAME_MANAGER.set_matrix(GAME_MANAGER.get_matrix())
 
     # Read the HTML file
-    with open("frontend/game.html", "r") as f:
+    with open("frontend/index.html", "r") as f:
         html_content = f.read()
 
     # Replace the placeholder with the actual attempts_left value
@@ -69,23 +69,35 @@ async def get_map():
 
 @router.post("/make-guess")
 async def make_guess(guess: Coordinates):
-    global GAME_MANAGER
     """
-    Ruta za unos korisničke pretpostavke.
-    Na osnovu unetih podataka, proverava da li je pretpostavka tačna
-    i vraća rezultat.
+    Endpoint for handling user guesses. It checks whether the guess is correct
+    and returns the result of the guess along with the game status.
+
+    Args:
+        guess (Coordinates): The user's guess containing the coordinates to check.
+
+    Returns:
+        dict: A dictionary containing the result message and the game status.
+            - "finished_win" if the game is won.
+            - "finished_lose" if the game is lost.
+            - "in_progress" if the game is still ongoing.
+
+    Raises:
+        HTTPException: If the guess is invalid or the game state is incorrect.
     """
-    # Ispisivanje podataka za debugging
+    # Debugging: print received guess
     print(f"Received guess: {guess}")
 
-    # Call the check_guess method from GameManager
+    # Call the check_guess method from GameManager to check the guess
     result = GAME_MANAGER.check_guess(guess)
     print(result)
-    print(f"{result["attempts_left"]}")
+    print(f"{result['attempts_left']}")  # Display attempts left for debugging
+
+    # Handle invalid guess or game state
     if result is None:
         raise HTTPException(status_code=400, detail="Invalid guess or game state.")
 
-    # Prepare the response based on the result of the guess
+    # Prepare the response based on the game status
     game_status = GAME_MANAGER.game_state.game_status
     result_message = ""
 
@@ -96,18 +108,18 @@ async def make_guess(guess: Coordinates):
             "message": result_message
         }
     elif game_status == "finished_lose":
-        result_message = "Unfortunately, the game is over. "
+        result_message = "Unfortunately, the game is over."
         return {
             "status": "finished_lose",
             "message": result_message,
-            "attempts_left": 0
+            "attempts_left": 0  # No attempts left if the game is lost
         }
     elif game_status == "in_progress":
-        result_message = "Keep trying! You still have a chance!" if GAME_MANAGER.game_state.result != "correct" else "Bravo, pogodili ste tačne koordinate!"
+        result_message = "Keep trying! You still have a chance!" if GAME_MANAGER.game_state.result != "correct" else "Bravo, you've guessed the correct coordinates!"
         return {
             "status": "in_progress",
             "message": result_message,
-            "attempts_left": result["attempts_left"]# Calculate and send attempts left
+            "attempts_left": result["attempts_left"]  # Return attempts left
         }
     else:
         raise HTTPException(status_code=400, detail="Invalid game status.")
@@ -116,16 +128,31 @@ async def make_guess(guess: Coordinates):
 class DifficultyRequest(BaseModel):
     difficulty: str
 
+
 @router.post("/change-difficulty")
 async def change_difficulty(request: DifficultyRequest):
+    """
+    Endpoint for changing the difficulty level of the game.
+
+    Args:
+        request (DifficultyRequest): The request containing the new difficulty level.
+
+    Returns:
+        dict: A dictionary containing a success message with the new difficulty level.
+
+    Raises:
+        HTTPException: If the provided difficulty level is invalid.
+    """
     difficulty = request.difficulty
-    print(f"Received difficulty: {difficulty}")  # This should log the string like 'intermediate'
+    print(f"Received difficulty: {difficulty}")  # Log the received difficulty level
 
     global GAME_MANAGER
 
+    # Check if the provided difficulty level is valid
     if difficulty not in GAME_MANAGER.difficulty_levels:
         raise HTTPException(status_code=400, detail="Invalid difficulty level")
 
+    # Set the new difficulty level in the GameManager
     GAME_MANAGER.set_difficulty(difficulty)
     return {"message": f"Difficulty level set to {difficulty}"}
 

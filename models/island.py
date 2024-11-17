@@ -45,7 +45,10 @@ class Island:
         self.mst = self._prim_algorithm(island_cells)
 
     def _prim_algorithm(self, island_cells):
-        """Implementation of Prim's Algorithm to generate the MST."""
+        """
+            Implementation of Prim's Algorithm to generate the MST.
+
+        """
         mst_edges = []
         visited = set()
         min_heap = []
