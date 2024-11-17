@@ -1,86 +1,91 @@
-# Generate the map when the application starts
 import os
-
-import matplotlib
 import numpy as np
+from PIL import Image
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from scipy.ndimage import gaussian_filter
 
 
-matplotlib.use("TkAgg")
-
-
-def generate_map(matrix=None, sigma=0.5):
-    # Ako matrica nije prosleđena, povući ćemo mapu
-
-
+def generate_map(matrix=None, sigma=0.2, target_width=600, target_height=600):
+    # If no matrix is provided, return None
     if matrix is None:
-        return None  # Ako mapa nije uspešno povučena, vrati None
+        return None  # If the map isn't successfully fetched, return None
 
-    # Primena Gaussian blur-a na matricu visine radi omekšavanja ivica
+    # Apply Gaussian blur on the height matrix to soften edges
     matrix_smoothed = gaussian_filter(matrix, sigma=sigma)
 
-    # Osnovne boje sa dodatnim nijansama za prirodne prelaze
+    # Basic colors with additional shades for natural transitions
     colors = [
-        (0, 105, 148),  # #006994 - Plava (More)
-        (229, 217, 194),  # #E5D9C2 - Tamnija bež
-        (181, 186, 97),  # #B5BA61 - Svetla maslinasta zelena
-        (133, 159, 61),  # #859F3D - Prigušena zelena
-        (124, 141, 76),  # #7C8D4C - Tamna maslinasta zelena
-
-        # Dodate nijanse između tamne maslinaste i tamno zelene
-        (104, 118, 62), (90, 101, 54), (77, 86, 46), (65, 73, 39), (57, 64, 33),
-        (49, 81, 30),     # #31511E - Tamno zelena
-
-        # Dodate nijanse između srednje smeđe i tamno smeđe
-        (123, 106, 74), (109, 93, 64),
-
-        (114, 84, 40),  # #725428 - Topla smeđa
-        (101, 69, 31),  # #65451F - Tamno smeđa
-        (192, 192, 192),  # #C0C0C0 - Svetlo siva
-        (128, 128, 128),  # #808080 - Srednje siva
-        (80, 80, 80),  # #505050 - Tamno siva
-        (255, 255, 255),  # #FFFFFF - Bela
+        (5, 107, 167, 255),  # Blue (Water)
+        (229, 217, 194),     # Darker beige
+        (181, 186, 97),      # Light olive green
+        (133, 159, 61),      # Muted green
+        (124, 141, 76),      # Dark olive green
+        (104, 118, 62),      # Dark green
+        (123, 106, 74),      # Brown
+        (114, 84, 40),       # Warm brown
+        (101, 69, 31),       # Dark brown
+        (192, 192, 192),     # Light gray
+        (128, 128, 128),     # Medium gray
+        (80, 80, 80),        # Dark gray
+        (255, 255, 255),     # White
     ]
 
-    # Generisanje proširene liste boja sa interpolacijom
+    # Generate extended list of colors with interpolation
     extended_colors = []
     for i in range(len(colors) - 1):
         color1 = colors[i]
         color2 = colors[i + 1]
-
-        # Dodajemo početnu boju
         extended_colors.append(color1)
-
-        # Interpoliramo 4 dodatne nijanse između color1 i color2
-        for j in range(1, 6):
+        for j in range(1, 6):  # Interpolate 4 more shades
             interpolated_color = tuple(
                 int(color1[k] + (color2[k] - color1[k]) * j / 6) for k in range(3)
             )
             extended_colors.append(interpolated_color)
 
-    extended_colors.append(colors[-1])  # Dodajemo poslednju boju
+    extended_colors.append(colors[-1])  # Add the last color
 
-    # Kreiranje prilagođene colormap
+    # Create the custom colormap
     cmap = ListedColormap([tuple(c / 255.0 for c in color) for color in extended_colors])
 
-    # Nivoi visina od 0 do 1000, u koraku od 50
+    # Set height levels from 0 to 1000 in steps of 50
     levels = np.linspace(0, 1000, len(extended_colors))
 
-    # Plotovanje terenske mape sa zamućenom matricom
+    # Plot the terrain map with the blurred matrix
     plt.figure(figsize=(6, 6))
     plt.contourf(matrix_smoothed, levels=levels, cmap=cmap)
-    plt.axis("off")  # Sakrivanje osi za čist prikaz
 
-    # Definiši putanju do fajla
+    # Invert the y-axis so that the image is not upside down
+    plt.gca().invert_yaxis()
+
+    plt.axis("off")  # Hide axes for a cleaner display
+
+    # Define the file path for saving the map
     map_path = "frontend/static/maps/map.png"
 
-    # Proveri da li direktorijum postoji, ako ne, kreiraj ga
+    # Check if the directory exists, if not, create it
     directory = os.path.dirname(map_path)
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+    # Save the figure
     plt.savefig(map_path, bbox_inches="tight", pad_inches=0)
     plt.close()
 
-    return map_path
+    # Use PIL to open the image and get its dimensions (width and height in pixels)
+    try:
+        with Image.open(map_path) as img:
+            width, height = img.size
+            print(f"Original image dimensions: {width}x{height}")
+
+            # Check if resizing is necessary
+            if width != target_width or height != target_height:
+                img_resized = img.resize((target_width, target_height), Image.LANCZOS)
+                img_resized.save(map_path)
+                print(f"Image resized to: {target_width}x{target_height}")
+
+    except Exception as e:
+        print(f"Error handling image: {e}")
+        return None
+
+    return map_path, target_width, target_height

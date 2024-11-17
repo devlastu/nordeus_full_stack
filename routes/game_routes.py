@@ -1,65 +1,95 @@
 from fastapi import APIRouter, HTTPException
 from starlette.responses import FileResponse, HTMLResponse
 from game_manager import GameManager
-from models.game_state import GameState, Coordinates
-from services.api_service import MapService
+from observers.game_state import Coordinates
 
 router = APIRouter()
-
-# Initialize services and manager
-game_manager = GameManager()
-map_service = MapService()
+GAME_MANAGER = GameManager()  # Create a fresh game_manager instance
 
 @router.get("/", response_class=HTMLResponse)
 async def index():
-    # Početna stranica sa dugmetom Play
+    """Serves the home page with a 'Play' button."""
     with open("frontend/index.html", "r") as f:
         return HTMLResponse(content=f.read())
 
+
 @router.get("/game", response_class=HTMLResponse)
 async def game():
-    # Stranica koja prikazuje mapu
+    """Serves the game page that displays the map."""
+    global GAME_MANAGER
+
+
+    # Initialize the game_manager instance
+    GAME_MANAGER.set_matrix(GAME_MANAGER.get_matrix())
+
+    # Read the HTML file
     with open("frontend/game.html", "r") as f:
-        return HTMLResponse(content=f.read())
+        html_content = f.read()
+
+    # Replace the placeholder with the actual attempts_left value
+    html_content = html_content.replace('id="attempts-left-text"></span>',
+                                        f'id="attempts-left-text">{GAME_MANAGER.num_of_lives}</span>')
+
+    # Return the modified HTML content with the injected attempts_left value
+    return HTMLResponse(content=html_content)
 
 @router.get("/get-map")
 async def get_map():
+    global GAME_MANAGER
     """
-    Ova ruta generiše mapu i vraća je kao PNG fajl.
+    This route generates the map and returns it as a PNG file.
+    Delegate map handling to game_manager, and use Map class to get the map image.
     """
-    # Generiši matricu mape
-    matrix = map_service.get_map_matrix()
 
-    if matrix is None:
-        return {"message": "Failed to generate map."}
+    map_image = GAME_MANAGER.get_map_image()  # Assume this method handles getting the map image
 
-    # Generiši sliku mape koristeći matricu
-    map_path = map_service.generate_map_image(matrix)
+    if not map_image:
+        raise HTTPException(status_code=500, detail="Failed to generate map image.")
 
-    if map_path is None:
-        return {"message": "Failed to generate map image."}
-
-    # Vraćanje mape kao odgovor
-    return FileResponse(map_path, media_type="image/png")
-
-
+    return FileResponse(map_image, media_type="image/png")
 
 
 @router.post("/make-guess")
 async def make_guess(guess: Coordinates):
+    global GAME_MANAGER
     """
     Ruta za unos korisničke pretpostavke.
     Na osnovu unetih podataka, proverava da li je pretpostavka tačna
     i vraća rezultat.
     """
-    print(f"Received guess: {guess}")  # Ispisivanje podataka za debugging
-    # game_state = GameState()
-    # Provera da li su koordinate validne
-    if not isinstance(guess.x, (int, float)) or not isinstance(guess.y, (int, float)):
-        raise HTTPException(status_code=422, detail="Invalid coordinates.")
+    # Ispisivanje podataka za debugging
+    print(f"Received guess: {guess}")
 
-    result = {
-        "status": "success",
-        "message": "Bravo, pogodili ste tačne koordinate!"
-    }
-    return result
+    # Call the check_guess method from GameManager
+    result = GAME_MANAGER.check_guess(guess)
+    print(result)
+    print(f"{result["attempts_left"]}")
+    if result is None:
+        raise HTTPException(status_code=400, detail="Invalid guess or game state.")
+
+    # Prepare the response based on the result of the guess
+    game_status = GAME_MANAGER.game_state.game_status
+    result_message = ""
+
+    if game_status == "finished_win":
+        result_message = "Well done, you've won!"
+        return {
+            "status": "finished_win",
+            "message": result_message
+        }
+    elif game_status == "finished_lose":
+        result_message = "Unfortunately, the game is over. "
+        return {
+            "status": "finished_lose",
+            "message": result_message,
+            "attempts_left": 0
+        }
+    elif game_status == "in_progress":
+        result_message = "Keep trying! You still have a chance!" if GAME_MANAGER.game_state.result != "correct" else "Bravo, pogodili ste tačne koordinate!"
+        return {
+            "status": "in_progress",
+            "message": result_message,
+            "attempts_left": result["attempts_left"]# Calculate and send attempts left
+        }
+    else:
+        raise HTTPException(status_code=400, detail="Invalid game status.")

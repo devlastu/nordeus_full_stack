@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import requests
 
 
@@ -19,7 +21,7 @@ class MapService:
 
             # Pretvaranje stringa u 2D matricu
             map_matrix = [list(map(int, row.split())) for row in map_data.strip().split("\n")]
-
+            # pprint(map_matrix, width=200)
             return map_matrix
         else:
             print(f"Failed to retrieve map. Status code: {response.status_code}")

@@ -1,14 +1,92 @@
-from models.game_state import GameState, Coordinates
+from observers.game_state import GameState
+from models.map import Map
 
 
 class GameManager:
+    def __init__(self, difficulty="regular"):
+        self.difficulty_levels = {
+            "easy": 5,
+            "regular": 3,
+            "hard": 2,
+            "intermediate": 4,
+            "master": 1
+        }
 
-    def check_guess(self, guess: Coordinates, game_state: GameState):
-        # Logika za proveru korisničkog unosa
-        correct = game_state.selected_island == guess
-        if correct:
-            game_state.attempts += 1
-            return {"result": "correct", "attempts": game_state.attempts}
-        else:
-            game_state.attempts += 1
-            return {"result": "incorrect", "attempts": game_state.attempts}
+        self.num_of_lives = self.difficulty_levels.get(difficulty, 3)  # Default to regular if difficulty is unknown
+        self.map = Map()  # Use the Singleton instance of Map
+        self.game_state = GameState()
+        self.game_state.num_of_lives = self.num_of_lives# Pass num_of_lives to the GameState
+        self.observers = []
+        self.set_winning_island()
+
+    def get_map(self):
+        """Return the map image from MapService."""
+        return self.map.get_matrix()
+
+    def get_matrix(self):
+        """Return the matrix of the map."""
+        return self.map.get_matrix()
+
+    def set_matrix(self, matrix):
+        """Set the new matrix for the map."""
+        self.map.set_matrix(matrix)
+
+    def get_map_image(self):
+        return self.map.get_map_path()
+
+    def check_guess(self, coordinates):
+        """Check the guess and update the game state."""
+        self.game_state.set_selected_island(coordinates, cell_size=self.map.cell_size)
+        return {"result": self.game_state.get_result(), "attempts_left": self.game_state.num_of_lives}
+
+    def get_island_data(self):
+        """Get island data using IslandDetector."""
+        return self.map.get_islands()  # Uses the Map's island detection
+
+    def set_winning_island(self):
+        """Set the winning island."""
+        winning_island = self.map.get_winning_island()  # Directly fetch the winning island
+        if winning_island:
+            self.game_state.winning_island = winning_island
+
+    def get_winning_island(self):
+        return self.game_state.winning_island
+
+    def get_game_status(self):
+        """Return the current status of the game."""
+        return self.game_state.game_status
+
+    def reset_game(self):
+        """Reset the game state to start over."""
+        self.game_state.initialize(self.num_of_lives)  # Reinitialize the game state with the correct number of lives
+        self.map = Map()  # Reset the map (singleton will reinitialize)
+
+
+# Helper function
+def print_matrix(matrix):
+    for row in matrix:
+        print(" ".join(str(cell).rjust(3, ' ') for cell in row))
+
+def print_matrix_map(matrix):
+    for row in matrix:
+        print(" ".join("1" if cell > 0 else "0" for cell in row))
+
+
+def test_game_manager():
+    game_manager = GameManager()  # Initialize the GameManager
+
+
+    # Set the winning island
+    game_manager.set_winning_island()  # Set the winning island based on max height
+
+    winning_island = game_manager.game_state.winning_island
+
+    print(winning_island)
+
+    # Simulate a guess attempt
+    result = game_manager.check_guess()  # This will simulate a guess attempt
+    print(f"\nRezultat pokušaja: {result['result']}, Broj pokušaja: {result['attempts']}")
+
+# # Run the test
+# test_game_manager()
+

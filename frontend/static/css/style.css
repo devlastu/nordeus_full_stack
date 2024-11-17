@@ -7,9 +7,10 @@ body, html {
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    font-family: Arial, sans-serif;
 }
 
-/* Dodajemo manji blur efekt sa ::before */
+/* Dodajemo manji blur efekat sa ::before */
 body::before {
     content: "";
     position: absolute;
@@ -18,8 +19,8 @@ body::before {
     right: 0;
     bottom: 0;
     background: inherit;
-    /*filter: blur(50px);*/
-    z-index: -1000;
+    filter: blur(10px);  /* Adjusted blur for better visual */
+    z-index: -1;
 }
 
 /* Stil za container bez pozadine */
@@ -28,21 +29,23 @@ body::before {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    max-width: 80%;
+    max-width: 90%;
     max-height: 80vh;
     padding: 20px;
     border-radius: 15px;
-    /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);*/
+    background: rgba(255, 255, 255, 0.8); /* Light background for readability */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow */
     z-index: 1;
 }
 
 /* Blur efekat za svaki pojedinačni element */
-.row .blured{
+.row .blured {
     position: relative;
     margin: 10px 0;
     padding: 10px;
-    backdrop-filter: blur(2px); /* Blur efekt na svakom elementu */
+    backdrop-filter: blur(3px); /* Stronger blur effect */
     border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5); /* Slight semi-transparent background */
 }
 
 /* Stil za mapu sa zaobljenim uglovima */
@@ -53,7 +56,12 @@ body::before {
     max-height: 50vh;
     object-fit: contain;
     cursor: pointer;
-    border-radius: 40px; /* Dodato za zaobljene uglove */
+    border-radius: 20px; /* Softer rounding */
+    transition: transform 0.3s ease-in-out; /* Smooth zoom effect */
+}
+
+#map:hover {
+    transform: scale(1.05); /* Hover zoom effect */
 }
 
 #coordinates p,
@@ -61,12 +69,27 @@ body::before {
     font-size: 1.2rem;
     text-align: center;
     margin-top: 10px;
+    color: #2c3e50; /* Darker text for better contrast */
+}
+
+#result-text {
+    font-weight: bold;
 }
 
 .btn {
-    margin-top: 5px;
-    padding: 5px 5px;
+    margin-top: 15px;
+    padding: 10px 20px;
     font-size: 1.2rem;
+    background-color: #3498db;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #2980b9;
 }
 
 #response {
@@ -74,18 +97,43 @@ body::before {
     max-height: 10vh;
 }
 
+#attempts-left-container {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    text-align: center;
+    color: #e74c3c; /* Red color for attempt count */
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     #map {
         max-height: 40vh;
     }
+
+    .container {
+        max-width: 95%;
+    }
+
+    #coordinates p,
+    #result-text {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-size: 1.1rem;
+        padding: 8px 18px;
+    }
 }
 
 @media (max-width: 576px) {
-    .btn {
-        font-size: 1.1rem;
-        padding: 12px 25px;
-    }
-    #coordinates p {
+    #coordinates p,
+    #result-text {
         font-size: 1rem;
     }
+
+    .btn {
+        font-size: 1rem;
+        padding: 8px 15px;
+    }
 }
+
