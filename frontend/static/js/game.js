@@ -170,12 +170,36 @@ function showPlayAgainPrompt() {
         cancelButtonText: "No",
     }).then((response) => {
         if (response.isConfirmed) {
-            // User wants to play again, reset the game (you can implement this reset logic here)
-            console.log("Starting a new game...");
-            // Example: Reload the page to restart the game
-            window.location.reload();  // Or implement specific game reset logic
+            // User wants to play again, send the restart request to the server
+            axios.post('/restart')
+                .then(res => {
+                    console.log("Server response after restart:", res.data);
+                    // Reset game logic or reload the page after successful restart
+                    window.location.reload();  // Reload the page to restart the game
+                })
+                .catch(error => {
+                    console.error("There was an error restarting the game:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "There was an issue restarting the game. Please try again.",
+                        icon: "error",
+                    });
+                });
         } else {
-            console.log("Game over, user doesn't want to play again.");
+            axios.post('/restart')
+                .then(res => {
+                    console.log("Server response after restart:", res.data);
+                    // Reset game logic or reload the page after successful restart
+                    window.location.href = 'index';    // Reload the page to restart the game
+                })
+                .catch(error => {
+                    console.error("There was an error restarting the game:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "There was an issue restarting the game. Please try again.",
+                        icon: "error",
+                    });
+                });
         }
     });
 }

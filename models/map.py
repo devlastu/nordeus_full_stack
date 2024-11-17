@@ -34,6 +34,26 @@ class Map:
             # Fetch and initialize matrix and related data during construction
             self.set_matrix()
 
+    def restart(self):
+        """
+        Reset the Map instance to its initial state and regenerate the map matrix.
+        """
+        # Reset all attributes to their initial state
+        self.islands = []
+        self.cell_size = 0
+        self.matrix = None
+        self.map_path = None
+        self.winning_island = None
+        self.map_dimensions = Dimensions()
+        self.matrix_winning_island_map = {}
+
+        # Fetch a new matrix and reinitialize the map
+        print("Restarting the map and regenerating data...")
+        self.set_matrix()
+
+        # Log success
+        print("Map has been successfully restarted.")
+
     def set_matrix(self, matrix=None):
         """
         Sets the map's matrix and updates the islands.

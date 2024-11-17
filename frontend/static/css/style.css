@@ -137,3 +137,36 @@ body::before {
     }
 }
 
+
+/* Ensure the video is fixed in the background */
+video.bg-video {
+    position: fixed; /* Fix the video to the background */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    object-fit: cover; /* Ensure the video scales correctly */
+    z-index: -1; /* Make sure the video stays behind the content */
+    display: block; /* Ensure the video is displayed as a block element */
+}
+
+/* Optional overlay for better visibility of the content */
+.video-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Add a dark overlay for better visibility */
+    z-index: 0;
+}
+
+/* Center content */
+.content-container {
+    position: relative;
+    z-index: 1; /* Ensure content stays above the video */
+    text-align: center;
+    color: white; /* White text for better contrast */
+    padding-top: 20px;
+}
+

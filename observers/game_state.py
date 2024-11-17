@@ -38,8 +38,19 @@ class GameState(BaseModel):
             scaled_x = int((30 * guess.x) / 600)
             scaled_y = int((30 * guess.y) / 600)
 
-            # Check if the scaled coordinates match the winning island's coordinates
-            is_correct = (scaled_x, scaled_y) in self.winning_island.coordinates
+            print(self.winning_island.coordinates)
+            print(f"X: {scaled_x}, Y: {scaled_y}")
+
+
+            # Extract x and y coordinates from the winning island's coordinates
+            x_coords = {coord[0] for coord in self.winning_island.coordinates}
+            y_coords = {coord[1] for coord in self.winning_island.coordinates}
+            print(f"X coords: {x_coords} and Y coords: {y_coords}")
+
+
+            # Check if scaled_x is in x_coords and scaled_y is in y_coords
+            is_correct = scaled_x in x_coords and scaled_y in y_coords
+            print(f"{scaled_x in x_coords}, {scaled_y in y_coords}")
 
         # Record the result of the guess
         self.result = missed_msg
@@ -48,7 +59,7 @@ class GameState(BaseModel):
         self.num_of_lives -= 1
         print("decremented")
         # Check if the number of remaining lives is less than the incorrect attempts
-        if self.num_of_lives <= 0:
+        if self.num_of_lives < 0:
             # If number of lives is zero or negative and there have been incorrect attempts,
             # the game should end with a loss
             self.result = missed_msg
@@ -112,6 +123,35 @@ class GameState(BaseModel):
         self.result = None
         self.game_status = "in_progress"
         self.attempts_history.clear()
+
+    def restart(self, num_of_lives: int = 3):
+        """
+        Reset the game state to its initial configuration.
+
+        Parameters:
+            num_of_lives (int): The number of lives to start with (default: 3).
+        """
+        self.selected_island = None
+        self.attempts = 0
+        self.correct_attempts = 0
+        self.incorrect_attempts = 0
+        self.result = None
+        self.game_status = "in_progress"
+        self.winning_island = None
+        self.num_of_lives = num_of_lives
+        self.attempts_history.clear()
+
+
+        # Notify observers that the game state has been reset
+        self.publisher.notify(
+            game_status=self.game_status,
+            total_attempts=self.attempts,
+            correct_attempts=self.correct_attempts,
+            incorrect_attempts=self.incorrect_attempts,
+            result=self.result,
+            remaining_attempts=self.num_of_lives,
+            winning_island_coordinates=None
+        )
 
     def set_num_of_lives(self, num_of_lives: int):
         self.num_of_lives = num_of_lives

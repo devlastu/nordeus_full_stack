@@ -12,6 +12,12 @@ async def index():
     with open("frontend/index.html", "r") as f:
         return HTMLResponse(content=f.read())
 
+@router.get("/index", response_class=HTMLResponse)
+async def index():
+    """Serves the home page with a 'Play' button."""
+    with open("frontend/index.html", "r") as f:
+        return HTMLResponse(content=f.read())
+
 
 @router.get("/game", response_class=HTMLResponse)
 async def game():
@@ -93,3 +99,16 @@ async def make_guess(guess: Coordinates):
         }
     else:
         raise HTTPException(status_code=400, detail="Invalid game status.")
+
+
+@router.post("/restart")
+async def restart_game():
+    """
+    Endpoint to restart the game.
+    This will reset the game state like attempts left, game status, and selected coordinates.
+    """
+    try:
+        GAME_MANAGER.reset_game()  # Reset the game state
+        return {"message": "Game restarted successfully!", "attempts_left": GAME_MANAGER.num_of_lives}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

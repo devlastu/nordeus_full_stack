@@ -58,9 +58,9 @@ class GameManager:
 
     def reset_game(self):
         """Reset the game state to start over."""
-        self.game_state.initialize(self.num_of_lives)  # Reinitialize the game state with the correct number of lives
-        self.map = Map()  # Reset the map (singleton will reinitialize)
-
+        self.map.restart()  # Reset the map (singleton will reinitialize)
+        self.game_state.restart(self.num_of_lives)
+        self.set_winning_island()
 
 # Helper function
 def print_matrix(matrix):
